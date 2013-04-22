@@ -1,0 +1,203 @@
+<COMPONENT>
+  <HEADER
+    PLATEFORM="ALL"
+    SERIAL=""
+    VERSION="0.1"
+    STATUS="ALPHA"
+    
+    COMPATIBILITY="ALL"
+    AUTHOR="datenpol"
+    RELEASE_DATE="20130320"
+    STARTABLE="true"
+  >
+    <SIGNATURE/>
+  </HEADER>
+
+  <FAMILIES>
+    <FAMILY>Business/OpenERP</FAMILY>
+  </FAMILIES>
+
+	<DOCUMENTATION>
+		<URL/>
+	</DOCUMENTATION>
+	<CONNECTORS>
+		<CONNECTOR CTYPE="FLOW" MAX_INPUT="0" MAX_OUTPUT="1"/>
+		<CONNECTOR CTYPE="ITERATE" MAX_OUTPUT="1" MAX_INPUT="1"/>
+		<CONNECTOR CTYPE="SUBJOB_OK" MAX_INPUT="1" />
+		<CONNECTOR CTYPE="SUBJOB_ERROR" MAX_INPUT="1" />
+		<CONNECTOR CTYPE="COMPONENT_OK"/>
+		<CONNECTOR CTYPE="COMPONENT_ERROR"/>
+		<CONNECTOR CTYPE="RUN_IF"/>
+	</CONNECTORS>
+	<PARAMETERS>
+		<PARAMETER NAME="VERSION_SELECTION" FIELD="CLOSED_LIST" NUM_ROW="5" REQUIRED="true">
+			<ITEMS DEFAULT="OPENERP_70">
+				<ITEM NAME="OPENERP_70" VALUE="OPENERP_70"/>
+			</ITEMS>
+		</PARAMETER>
+	
+		<!-- version 7.0 start -->
+		
+		<PARAMETER NAME="HOST" FIELD="TEXT" NUM_ROW="10" REQUIRED="true" SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<DEFAULT>"localhost"</DEFAULT>
+		</PARAMETER>
+		
+		<PARAMETER NAME="PORT" FIELD="INTEGER" NUM_ROW="10" REQUIRED="true" SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<DEFAULT>8069</DEFAULT>
+		</PARAMETER>
+		
+		<PARAMETER NAME="DB" FIELD="TEXT" NUM_ROW="10" REQUIRED="true" SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<DEFAULT>"openerp_database"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="USERNAME" FIELD="TEXT" NUM_ROW="20" REQUIRED="true" SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<DEFAULT>"username"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="PASSWORD" FIELD="TEXT" NUM_ROW="20" REQUIRED="true" SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<DEFAULT>"password"</DEFAULT>
+		</PARAMETER>
+		
+		<PARAMETER NAME="MODEL_70" FIELD="CLOSED_LIST" NUM_ROW="40"
+			REQUIRED="true"  SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<ITEMS DEFAULT="res_partner">
+				<ITEM NAME="res_country" VALUE="res.country" />
+				<ITEM NAME="res_currency" VALUE="res.currency" />
+				<ITEM NAME="res_partner" VALUE="res.partner" />
+				<ITEM NAME="res_partner_bank" VALUE="res.partner.bank" />
+				<ITEM NAME="custom" VALUE="custom" />
+			</ITEMS>
+		</PARAMETER>
+		
+		<PARAMETER NAME="CUSTOM_MODEL_70" FIELD="TEXT" NUM_ROW="40"
+			REQUIRED="false"  SHOW_IF="MODEL_70=='custom'">
+			<DEFAULT>custom.model</DEFAULT>
+		</PARAMETER>		
+		
+		<PARAMETER NAME="FILTER_FIELD" FIELD="COLUMN_LIST" NUM_ROW="60"
+			REQUIRED="true" >
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+		
+		<PARAMETER NAME="FILTER_OPERATOR" FIELD="CLOSED_LIST" NUM_ROW="60"
+			REQUIRED="true"  SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<ITEMS DEFAULT="equals_not">
+				<ITEM NAME="equals" VALUE="=" />
+				<ITEM NAME="equals_not" VALUE="!=" />
+				<ITEM NAME="less" VALUE="&lt;" />
+				<ITEM NAME="greater" VALUE="&gt;" />
+				<ITEM NAME="like" VALUE="like" />
+			</ITEMS>
+		</PARAMETER>
+		
+		<PARAMETER NAME="FILTER_VALUE" FIELD="TEST" NUM_ROW="60"
+			REQUIRED="true"  SHOW_IF="VERSION_SELECTION=='OPENERP_70'">
+			<DEFAULT>"-1"</DEFAULT>
+		</PARAMETER>
+		
+		<!-- 
+		<PARAMETER  NAME="PARAMS"  FIELD="TABLE"  NUM_ROW="80"  NB_LINES="2" >
+		      <ITEMS>
+		        <ITEM NAME="NAME"/>
+		        <ITEM NAME="VALUE"/>
+		        <ITEM NAME="CLASS" FIELD="CLOSED_LIST">
+		          <ITEMS DEFAULT="String">
+		            <ITEM NAME="Integer" VALUE="java.lang.Integer.class"/>
+		            <ITEM NAME="Short" VALUE="java.lang.Short.class"/>
+		            <ITEM NAME="Boolean" VALUE="java.lang.Boolean.class"/>
+		            <ITEM NAME="Byte" VALUE="java.lang.Byte.class"/>
+		            <ITEM NAME="Long" VALUE="java.lang.Long.class"/>
+		            <ITEM NAME="Double" VALUE="java.lang.Double.class"/>
+		            <ITEM NAME="Float" VALUE="java.lang.Float.class"/>
+		            <ITEM NAME="Character" VALUE="java.lang.Character.class"/>
+		            <ITEM NAME="String" VALUE="java.lang.String.class"/>
+		            <ITEM NAME="Date" VALUE="java.util.Date.class"/>
+		            <ITEM NAME="Map" VALUE="java.util.Map.class"/>
+		            <ITEM NAME="Object" VALUE="java.lang.Object.class"/>
+		            <ITEM NAME="Object[]" VALUE="java.lang.Object[].class"/>
+		          </ITEMS>
+		        </ITEM>       
+		      </ITEMS>
+    	</PARAMETER>
+    	-->
+		
+		<PARAMETER NAME="SCHEMA" FIELD="SCHEMA_TYPE" NUM_ROW="90" REQUIRED="true">
+			<TABLE IF="(MODEL_70=='custom')">
+				<COLUMN KEY="true" LENGTH="255" NAME="id" NULLABLE="false" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="name" NULLABLE="false" TYPE="id_String"/>
+			</TABLE>
+			<TABLE IF="(MODEL_70=='res_country')">
+				<COLUMN KEY="true" LENGTH="255" NAME="id" NULLABLE="false" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="code" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="currency_id" NULLABLE="false" TYPE="id_Integer"/>
+			</TABLE>
+			<TABLE IF="(MODEL_70=='res_currency')">
+				<COLUMN KEY="true" LENGTH="255" NAME="id" NULLABLE="false" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="symbol" NULLABLE="false" TYPE="id_String"/>
+			</TABLE>			
+			<TABLE IF="(MODEL_70=='res_partner')">
+				<COLUMN KEY="true" LENGTH="255" NAME="id" NULLABLE="false" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="active" NULLABLE="true" TYPE="id_Boolean"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="title" NULLABLE="true" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="title___name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="function" NULLABLE="true" TYPE="id_String"/>								
+				<COLUMN KEY="false" LENGTH="128" NAME="street" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="street2" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="city" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="24" NAME="zip" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="country_id" NULLABLE="true" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="country_id___name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="email" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="64" NAME="website" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="64" NAME="fax" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="64" NAME="mobile" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="64" NAME="phone" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="64" NAME="birthdate" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="13" NAME="ean13" NULLABLE="true" TYPE="id_String"/>				
+				<COLUMN KEY="false" LENGTH="1000" NAME="comment" NULLABLE="true" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="parent_id" NULLABLE="true" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="company_id" NULLABLE="true" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="128" NAME="company_id___name" NULLABLE="false" TYPE="id_String"/>				
+				<COLUMN KEY="false" LENGTH="255" NAME="employee" NULLABLE="true" TYPE="id_Boolean"/>				
+				<COLUMN KEY="false" LENGTH="255" NAME="supplier" NULLABLE="true" TYPE="id_Boolean"/>				
+				<COLUMN KEY="false" LENGTH="255" NAME="customer" NULLABLE="true" TYPE="id_Boolean"/>				
+				<COLUMN KEY="false" LENGTH="255" NAME="use_parent_address" NULLABLE="true" TYPE="id_Boolean"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="is_company" NULLABLE="true" TYPE="id_Boolean"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="opt_out" NULLABLE="true" TYPE="id_Boolean"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="user_id" NULLABLE="true" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="bank_ids" NULLABLE="false" TYPE="id_String"/>
+			</TABLE>
+			<TABLE IF="(MODEL_70=='res_partner_bank')">
+				<COLUMN KEY="true" LENGTH="255" NAME="id" NULLABLE="false" TYPE="id_Integer"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="bank_name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="owner_name" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="street" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="city" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="zip" NULLABLE="false" TYPE="id_String"/>
+				<COLUMN KEY="false" LENGTH="255" NAME="acc_number" NULLABLE="false" TYPE="id_String"/>
+			</TABLE>			
+		</PARAMETER>
+						
+	</PARAMETERS>
+ 
+  <CODEGENERATION>
+    <IMPORTS>
+      <IMPORT NAME="COMMONS-httpclient" MODULE="commons-httpclient-3.0.1.jar" REQUIRED="true" />
+      <IMPORT NAME="WS-util" MODULE="ws-commons-util-1.0.1.jar" REQUIRED="true" />
+      <IMPORT NAME="XMLRPC-client" MODULE="xmlrpc-client-3.0.jar" REQUIRED="true" />
+      <IMPORT NAME="XMLRPC-common" MODULE="xmlrpc-common-3.0.jar" REQUIRED="true" />
+      <IMPORT NAME="COMMONS-Logging" MODULE="commons-logging-1.1.jar" REQUIRED="true" />
+  	  <IMPORT NAME="COMMONS-codec" MODULE="commons-codec-1.3.jar" REQUIRED="true" />
+  	  <IMPORT NAME="XMLPRC-AUTIL" MODULE="autil.jar" REQUIRED="true" />
+  	  <IMPORT NAME="OPENERP-Java-API" MODULE = "openerp-java-api-1.2.0.jar" REQUIRED="true" />
+    </IMPORTS>
+  </CODEGENERATION>
+     
+  <RETURNS>
+    <RETURN NAME="NB_LINE" TYPE="id_Integer" AVAILABILITY="AFTER"/>
+  </RETURNS>
+  
+</COMPONENT>

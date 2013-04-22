@@ -1,0 +1,35 @@
+<%@ jet 
+imports="
+        org.talend.core.model.process.INode  
+        org.talend.designer.codegen.config.CodeGeneratorArgument
+        org.talend.core.model.process.ElementParameterParser
+        "
+%>
+<%
+CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+INode node = (INode)codeGenArgument.getArgument();
+String cid = node.getUniqueName();
+String version_selection = ElementParameterParser.getValue(node, "__VERSION_SELECTION__");
+
+
+if(version_selection.equals("OPENERP_70")){
+
+    String username = ElementParameterParser.getValue(node, "__USERNAME__");
+	String password = ElementParameterParser.getValue(node, "__PASSWORD__");
+    String host=ElementParameterParser.getValue(node,"__HOST__");
+    String port=ElementParameterParser.getValue(node,"__PORT__");
+    String db=ElementParameterParser.getValue(node,"__DB__");
+%>
+    // create session;  startSession logs into the server and keeps the userid of the logged in user
+    com.debortoliwines.openerp.api.Session openERPSession_<%=cid%> = new com.debortoliwines.openerp.api.Session(<%=host %>, <%=port %>, <%=db %>, <%=username %>, <%=password %>);
+	openERPSession_<%=cid%>.startSession();
+<%
+} else {
+%>
+	// NOT IMPLEMENTED: for future versions
+<%
+}
+%>
+
+
+

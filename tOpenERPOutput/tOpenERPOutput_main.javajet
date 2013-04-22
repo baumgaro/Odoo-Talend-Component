@@ -1,0 +1,92 @@
+<%@ jet 
+imports="
+        org.talend.core.model.process.INode 
+    	org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType		
+		java.util.List
+        "
+%>
+<%
+CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+INode node = (INode)codeGenArgument.getArgument();
+String cid = node.getUniqueName();
+String version_selection = ElementParameterParser.getValue(node, "__VERSION_SELECTION__");
+if(version_selection.equals("OPENERP_70")) {
+
+    String operation = ElementParameterParser.getValue(node,"__OPERATION__");
+    String idColumn = ElementParameterParser.getValue(node,"__ID_COLUMN__");
+	String model=ElementParameterParser.getValue(node,"__MODEL_70__");
+	if ("custom".equals(model)) {
+	  	model=ElementParameterParser.getValue(node,"__CUSTOM_MODEL_70__");
+	   	// from model.name to database_table_name
+	   	model.replace(".","_");
+	}    
+    
+    String incomingConnName = null;
+    List<? extends IConnection> conns = node.getIncomingConnections();
+    if(conns != null && conns.size() > 0) {
+        IConnection conn = conns.get(0);
+        incomingConnName = conn.getName();
+    }
+    List<IMetadataColumn> columns = null;
+    List<IMetadataTable> metadataTables = node.getMetadataList();
+    if(metadataTables != null && metadataTables.size() > 0) {
+        IMetadataTable metadataTable = metadataTables.get(0);
+        if(metadataTable != null) {
+            columns = metadataTable.getListColumns();
+			int sizeColumns = columns.size();
+			// Build HashMap with values from Talend-flow
+%>
+    com.debortoliwines.openerp.api.ObjectAdapter objAdapter_<%=cid%> = openERPSession_<%=cid%>.getObjectAdapter("<%=model %>");
+    java.util.HashMap<String, Object> valueMap_<%=cid%> = new java.util.HashMap<String, Object>();
+<%
+			for (int i = 0; i < sizeColumns; i++) {  			
+        		IMetadataColumn column = columns.get(i);
+        		JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+        		String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+        		
+        		if (JavaTypesManager.isJavaPrimitiveType( javaType, column.isNullable())) {
+        			// Primitives: int, boolean are directly written to map
+%>
+	valueMap_<%=cid%>.put("<%=column.getLabel()%>",<%=incomingConnName%>.<%=column.getLabel()%>);
+<%
+				} else {
+					// Objects: Null-Values are replaced with "". xml-rpc does not go with null values
+%>
+	if (<%=incomingConnName%>.<%=column.getLabel()%>!=null && !"".equals(<%=incomingConnName%>.<%=column.getLabel()%>)) {
+		valueMap_<%=cid%>.put("<%=column.getLabel()%>",<%=incomingConnName%>.<%=column.getLabel()%>);
+	} else {
+		valueMap_<%=cid%>.put("<%=column.getLabel()%>","");
+	}
+<%						
+				}
+            }
+            
+            // Choose operation to perform on OpenERP and execute
+            if ("insert".equals(operation)) {
+%>
+	openERPSession_<%=cid%>.getOpenERPCommand().createObject("<%=model%>", valueMap_<%=cid%>);
+<%          
+            } else if ("update".equals(operation)) {
+%>
+	openERPSession_<%=cid%>.getOpenERPCommand().writeObject("<%=model%>", (Integer) valueMap_<%=cid%>.get("<%=idColumn%>") ,valueMap_<%=cid%>);
+<%
+            } else if ("delete".equals(operation)) {
+%>            
+    openERPSession_<%=cid%>.getOpenERPCommand().unlinkObject("<%=model%>", new Object[]{(Integer) valueMap_<%=cid%>.get("<%=idColumn%>")});
+<%            
+            }
+		}
+    }
+} else {
+%>
+	// NOT IMPLEMENTED: for future versions
+<%
+}
+%>

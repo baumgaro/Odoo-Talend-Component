@@ -1,0 +1,209 @@
+<%@ jet 
+imports="
+    org.talend.core.model.process.INode
+    org.talend.core.model.process.ElementParameterParser
+    org.talend.core.model.metadata.IMetadataTable 
+    org.talend.designer.codegen.config.CodeGeneratorArgument
+    org.talend.commons.utils.StringUtils
+    org.talend.core.model.process.IConnection
+    org.talend.core.model.metadata.IMetadataColumn
+  	org.talend.core.model.process.EConnectionType
+  	org.talend.core.model.metadata.types.JavaTypesManager
+	org.talend.core.model.metadata.types.JavaType
+	org.talend.core.model.process.IConnectionCategory
+  	java.util.Map
+    java.util.List
+    java.util.HashMap
+    java.util.Arrays
+"
+%>
+<%
+// String used to delimit 'field' and additional field_info
+// title (Integer)= id
+// title (String) = name
+// title___id (Integer)=id, title___name(String)=name
+// title___id (String)=name !
+// bankids (List) = {1,2,3}
+final String SPLIT_STRING="___";
+ 
+CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+INode node = (INode)codeGenArgument.getArgument();
+List<IMetadataTable> metadatas = node.getMetadataList();
+if ((metadatas!=null)&&(metadatas.size()>0)) {  //1
+    IMetadataTable metadata = metadatas.get(0);
+    if (metadata!=null) { //2 
+        String cid = node.getUniqueName();
+        List<IMetadataColumn> listColumns = metadata.getListColumns(); 
+        String username = ElementParameterParser.getValue(node, "__USERNAME__");
+		String password = ElementParameterParser.getValue(node, "__PASSWORD__");
+        List<Map<String, String>> params = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node,"__PARAMS__");
+        String host=ElementParameterParser.getValue(node,"__HOST__");
+        String port=ElementParameterParser.getValue(node,"__PORT__");
+        String db=ElementParameterParser.getValue(node,"__DB__");
+        String model=ElementParameterParser.getValue(node,"__MODEL_70__");
+        if ("custom".equals(model)) {
+        	model=ElementParameterParser.getValue(node,"__CUSTOM_MODEL_70__");
+        	// from model to database-table-name
+        	model.replace(".","_");
+        }
+        String filter_field = ElementParameterParser.getValue(node,"__FILTER_FIELD__");
+        String filter_operator = ElementParameterParser.getValue(node,"__FILTER_OPERATOR__");
+        String filter_value = ElementParameterParser.getValue(node,"__FILTER_VALUE__");        
+%>
+            int nb_line_<%=cid %> = 0;
+            com.debortoliwines.openerp.api.Session openERPSession_<%=cid%> = new com.debortoliwines.openerp.api.Session(<%=host %>, <%=port %>, <%=db %>, <%=username %>, <%=password %>);
+
+		    // startSession logs into the server and keeps the userid of the logged in user
+		    openERPSession_<%=cid%>.startSession();
+            com.debortoliwines.openerp.api.ObjectAdapter objAdapter_<%=cid%> = openERPSession_<%=cid%>.getObjectAdapter("<%=model %>");
+			
+			// Read Model
+            com.debortoliwines.openerp.api.FilterCollection filters_<%=cid%> = new com.debortoliwines.openerp.api.FilterCollection();
+			filters_<%=cid%>.add("<%=filter_field %>","<%=filter_operator %>",<%=filter_value %>);
+
+<%
+    	
+        if (metadata != null) { //3
+	    	List<IMetadataColumn> columnList = metadata.getListColumns();
+	    	int nbSchemaColumns = columnList.size();			
+	    	List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+	    					
+	    	// If output columns are defined build the list of output column and request data from the webservice
+	    	if (nbSchemaColumns > 0 && outgoingConns != null && outgoingConns.size() > 0) {  //4
+	    
+	    	    IConnection outgoingConn = outgoingConns.get(0);
+	    	    if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) { // 5
+
+			    	// title (Integer)=id, title (String) =name, title___id (Integer)=id, title___name(String)=name, title___id (String)=name!
+			    	// get unique columns via hashmap: title
+			    	HashMap<String, String> columnMap = new HashMap<String, String>();
+			    	for( int i=0; i<columnList.size(); i++) {
+			    		String[] columnSplitArray = columnList.get(i).getLabel().split(SPLIT_STRING);
+			    		String columnFieldname = columnSplitArray[0];  // title
+			    		columnMap.put(columnFieldname,columnFieldname);
+					}
+%>
+			String[] columnNameArray_<%=cid%> = new String[<%=columnMap.size()%>];
+<%					
+					
+					// output of columnNames to generated code
+					int columndIdx=0;
+					for (Map.Entry<String, String> entry : columnMap.entrySet()) {    	
+%>		    
+        	columnNameArray_<%=cid%>[<%=columndIdx%>] = "<%=entry.getKey()%>";
+<%        				
+						columndIdx++;
+        			}
+        		
+%>
+            com.debortoliwines.openerp.api.RowCollection result_rows<%=cid%> = objAdapter_<%=cid%>.searchAndReadObject(filters_<%=cid%>, columnNameArray_<%=cid%>);
+			
+			Object value_<%=cid%> = null;
+			Object[] value_objArr_<%=cid%> = null;
+			
+			//if webservice call was ok - iterate the rows
+           	for (com.debortoliwines.openerp.api.Row row : result_rows<%=cid%>) {
+           		nb_line_<%=cid %>++;
+<%
+	    		    for( int i = 0; i < columnList.size(); i++) { //6
+	        			IMetadataColumn column = columnList.get(i);
+	        			String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+	        			JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+	        			String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
+	        			
+	        			// retrieve fieldname and index: title___xyz
+	        			String[] columnSplitArray=columnList.get(i).getLabel().split(SPLIT_STRING);
+	        			String columnFieldname = columnSplitArray[0];
+	        			String columnFieldinfo = null;
+	        			if (columnSplitArray.length>1) columnFieldinfo=columnSplitArray[1];
+	        			
+%>						
+				// Get the real value according the columnName
+				value_<%=cid%> = row.get("<%=columnFieldname%>");
+				if (value_<%=cid%> instanceof Object[]) {
+					value_objArr_<%=cid%> = (Object[])value_<%=cid%>;
+					value_<%=cid%>=null;
+<%
+						if (javaType == JavaTypesManager.STRING ) {
+							
+							if (columnFieldname.endsWith("_ids")) {
+%>
+					// One2Many-Relation <String> => Comma-separated resultstring
+					if (value_objArr_<%=cid%>!=null) {
+						java.lang.StringBuilder arTostr = new java.lang.StringBuilder();
+					    if (value_objArr_<%=cid%>.length > 0) {
+					        arTostr.append(value_objArr_<%=cid%>[0]);
+					        for (int i=1; i<value_objArr_<%=cid%>.length; i++) {
+					            arTostr.append(",");
+					            arTostr.append(value_objArr_<%=cid%>[i]);
+					        }
+					    }
+						value_<%=cid%>=arTostr.toString();
+					}					
+<%						
+							} else {
+%>
+					// Many2One-Relation <String> => name
+					if (value_objArr_<%=cid%>!=null && value_objArr_<%=cid%>.length>=2 ) {
+						value_<%=cid%> = value_objArr_<%=cid%>[1];
+					}
+<%
+							}
+							
+						} else if (javaType == JavaTypesManager.INTEGER ) {
+%> 
+					// Many2One-Relation <Integer> => id
+					if (value_objArr_<%=cid%>!=null && value_objArr_<%=cid%>.length>=1 ) {
+						value_<%=cid%> = value_objArr_<%=cid%>[0];
+					}
+<%					
+						} else if (javaType == JavaTypesManager.LIST ){
+%> 
+					// One2Many-Relation <List> => List of Integers
+					java.util.List<Object> objList = java.util.Arrays.asList(value_objArr_<%=cid%>);
+					value_<%=cid%> = objList;
+<%
+						} else {	
+%>
+					// TODO: array of unknown objects
+<%
+						}
+%>
+				}
+						
+				if (value_<%=cid%> != null && !"".equals(value_<%=cid%>.toString())) {
+<%
+				    	if (javaType == JavaTypesManager.INTEGER) { 
+%>	
+			    	<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = (Integer) value_<%=cid%>;
+<%			    					
+				    	} else if (javaType == JavaTypesManager.STRING || javaType == JavaTypesManager.OBJECT) { 
+%>
+			    	<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = (String) value_<%=cid%>;
+<%
+				    	} else if (javaType == JavaTypesManager.DATE) { 
+%>
+					<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = ParserUtils.parseTo_Date((String) value_<%=cid%>, <%= patternValue %>);
+<%					
+				    	} else if (javaType == JavaTypesManager.BYTE_ARRAY) { // byte[]
+%>
+					<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = ((String) value_<%=cid%>).getBytes();
+<%
+				    	} else  { // other
+%>						
+					<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = ParserUtils.parseTo_<%= typeToGenerate %>(value_<%=cid%>.toString());
+<%
+				    	}
+%>			
+				} else {
+			    	<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = <%=JavaTypesManager.getDefaultValueFromJavaType(typeToGenerate)%>;
+				}
+<%
+					}//6
+				}//5
+			}//4
+		}//3
+	}//2
+}//1
+
+%>	
