@@ -13,3 +13,6 @@ tOpenERPInput
 
 Further information and an instruction about the use of the properties of the components can be found at our blog:
 http://datenpol.at/unternehmen/blog/datenpol-creates-talend-component-for-openerp/
+
+Thanks to the creators of the OpenERP Java API which we used as core library to communicate with OpenERP
+http://sourceforge.net/projects/openerpjavaapi/
