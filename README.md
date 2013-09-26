@@ -9,7 +9,8 @@ As a result we developed two new community components:
 
 tOpenERPInput for reading objects
 tOpenERPOutput for object creation, updates and object deletion
-tOpenERPInput
+
+An example Talend Job (Version 5.3) is included. Just create a new Talend-Job and use File/Import.
 
 Further information and an instruction about the use of the properties of the components can be found at our blog:
 http://datenpol.at/unternehmen/blog/datenpol-creates-talend-component-for-openerp/
