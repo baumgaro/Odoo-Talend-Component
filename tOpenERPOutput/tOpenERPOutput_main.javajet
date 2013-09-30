@@ -62,7 +62,7 @@ if(version_selection.equals("OPENERP_70")) {
 	if (<%=incomingConnName%>.<%=column.getLabel()%>!=null && !"".equals(<%=incomingConnName%>.<%=column.getLabel()%>)) {
 		valueMap_<%=cid%>.put("<%=column.getLabel()%>",<%=incomingConnName%>.<%=column.getLabel()%>);
 	} else {
-		valueMap_<%=cid%>.put("<%=column.getLabel()%>","");
+		valueMap_<%=cid%>.put("<%=column.getLabel()%>",false);
 	}
 <%						
 				}
