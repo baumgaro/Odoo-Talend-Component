@@ -1,9 +1,9 @@
-OpenERP-Talend-Component
+odoo-Talend-Component
 ========================
 
 Input and Output Component for Talend Open Studio (Dataintegration)
 
-Recently we were looking for Talend OpenERP components but soon discovered that there aren't any.
+Recently we were looking for Talend odoo (formerly known as OpenERP) components but soon discovered that there aren't any.
 
 As a result we developed two new community components:
 
