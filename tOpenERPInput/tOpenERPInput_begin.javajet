@@ -183,7 +183,7 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {  //1
 <%
 				    	} else if (javaType == JavaTypesManager.DATE) { 
 %>
-					<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = ParserUtils.parseTo_Date((String) value_<%=cid%>, <%= patternValue %>);
+					<%=outgoingConn.getName()%>.<%=columnList.get(i).getLabel()%> = (Date) value_<%=cid%>;
 <%					
 				    	} else if (javaType == JavaTypesManager.BYTE_ARRAY) { // byte[]
 %>
