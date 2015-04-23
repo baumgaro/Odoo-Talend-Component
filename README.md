@@ -17,3 +17,9 @@ http://datenpol.at/unternehmen/blog/datenpol-creates-talend-component-for-opener
 
 Thanks to the creators of the OpenERP Java API which we used as core library to communicate with Odoo
 http://sourceforge.net/projects/openerpjavaapi/
+
+
+Note 23rd April 2015
+=====================
+We didn't test the component with reason versions of talend. There seem some problems with these versions or maybe with Odoo 8.
+As soon as there is time - right now are in the middle of projects - we will fix the issues and add some new features. we would be happy about everyone who could fork the project here on Github and fix the problems in the meanwhile.
